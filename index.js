@@ -1,110 +1,85 @@
 const express = require('express');
 const app = express();
 const port = 3000;
-const formations = require("./data/data.js")
+const formations = require("./data/data.js"); // Vérifie que le fichier existe
 const path = require('path');
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json()); //  Middleware JSON pour traiter les requêtes POST
 
-// app.get('/formations/view', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'public', 'products.html'));
-// });
-
-app.get('/formations', (req, res) => {
-  res.json(formations);
-});
-
-app.get('/formations/:id', (req, res) => {
-    const formationId = parseInt(req.params.id);
-    const formation = formations.find(item => item.id === formationId);
-    
-    if (!formation) {
-      return res.status(404).send({message: 'formation nexsiste pas'});
-    }else {
-      res.json(formation);
-    }
-  });
-
-app.get('/formateur/:id', (req, res) => {
- const formateurID = parseInt(req.params.id);
-const formateur = formateurs.find(item=>item.id ===  formateurID)
-if(!formateur){
-  return res.status(404).send({message:"formateur nexest pas"})
-}else{
-  res.json(formateur);
-}
-});
-app.get("/formateur",(req,res)=>{
-  res.json(formateurs)
-})
-// app.get('/index', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'public', 'index.html'));
-// });
-app.get("/Formation1",(req,res)=>{
-  res.sendFile(path.join(__dirname,"public","formation1.html"))
-})
-
-
-app.listen(port, () => {
-  console.log("Serveur lancé sur",port);
-});
-// DELETE LES FORMATION
-app.delete('/formations/:id', (req, res) => {
-  const id = parseInt(req.params.id); 
-  const index = formations.findIndex(item => item.id === id); 
-
-  if (index === -1) {
-    
-    return res.status(404).send({ message: 'Formation non trouvée' });
-  }
-
-  formations.splice(index, 1); 
-  res.send({ message: 'Formation supprimée avec succès' });
-});
-app.use(express.static(path.join(__dirname, 'public')));
-
-
+// Route principale
 app.get('/', (req, res) => {
   res.send("Bienvenue à Azicode62");
 });
 
-
+// Affichage des formations
 app.get('/formations', (req, res) => {
   res.json(formations);
 });
 
+// Affichage d'une formation spécifique (voir plus)
 app.get('/formations/:id', (req, res) => {
-    const formationId = parseInt(req.params.id);
-    const formation = formations.find(item => item.id === formationId);
-    
-    if (!formation) {
-      return res.status(404).send({message: 'formation nexsiste pas'});
-    }else {
-      res.json(formation);
-    }
-  });
-
-
-
-
-
-
-
-app.listen(port, () => {
-  console.log("Serveur lancé sur",port);
+  const formationId = parseInt(req.params.id);
+  const formation = formations.find(item => item.id === formationId);
+  
+  if (!formation) {
+    return res.status(404).json({ message: 'Formation inexistante' });
+  }
+  
+  res.json(formation);
 });
-// DELETE LES FORMATION
-app.delete('/formations/:id', (req, res) => {
-  const id = parseInt(req.params.id); 
-  const index = formations.findIndex(item => item.id === id);
+app.get('/index', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+app.get("/Formation1",(req,res)=>{
+  res.sendFile(path.join(__dirname,"public","formation1.html"))
+})
 
-  if (index === -1) {
-    
-    return res.status(404).send({ message: 'Formation non trouvée' });
+// Page d'ajout de formation
+app.get('/novelleformation', (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "novelleformation.html"));
+});
+
+// Ajout d'une nouvelle formation (POST)
+app.post('/novelleformation', (req, res) => {
+  console.log(req.body); //  Correction ici
+
+  const { nomFormation, volumeHoraire, description, formateur,  photo} = req.body;
+
+  if (!nomFormation || !volumeHoraire || !description || !formateur) {
+    return res.status(400).json({ message: "Tous les champs sont requis." });
   }
 
-  formations.splice(index, 1); 
-  res.send({ message: 'Formation supprimée avec succès' });
+  const nouvelleFormation = {
+    id: formations.length + 1,
+    title: nomFormation,
+    volumeHoraire,
+    formateur,
+    photo,
+    description
+  };
+
+  formations.push(nouvelleFormation);
+  
+  res.status(201).json(nouvelleFormation);
 });
+
+// Démarrer le serveur
+app.listen(port, () => {
+  console.log(` Serveur lancé sur http://localhost:${port}`);
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
